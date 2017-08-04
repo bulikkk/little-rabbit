@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rabbit</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <style>
+        .get-form, .set-form {
+            text-align: center;
+            height: 200px;
+            width: 800px;
+            background-color: #2AD5CA;
+            margin: 0 auto;
+            margin-top: 50px;
+        }
+        .hidden {
+            display: none;
+        }
+        input {
+            width: 200px;
+            margin-top: 20px;
+        }
+        .results {
+            padding-left: 100px;
+            padding-right: 100px;
+            min-height: 350px;
+            width: 600px;
+            margin-top: 50px;
+            margin-left: auto;
+            margin-right: auto;
+            border: 2px solid black;
+            bottom: 50px;
+        }
+
+    </style>
+</head>
+<body style="background-color: #D7D7D9">
+    <div style="text-align: center; width: 100%;">
+        <h1>LITTLE RABBIT</h1>
+    </div>
+    <div style="text-align:center; width:100%; margin-top:80px;">
+        <button id="get" type="button" style="display:inline-block; width:70px; margin-right:50px;">GET</button>
+        <button id="set" type="button" style="display:inline-block; width:70px; margin-left:50px;">SET</button>
+    </div>
+    <div class="results">
+        <h2 style="text-align: center;">ACTIONS</h2>
+    </div>
+    <div class="get-form hidden">
+        <h2>GET</h2>
+        <input id="get-key" type="text" name="key" placeholder="key"><br>
+        <button style="margin-top: 20px;" id="get-submit">SEND</button>
+    </div>
+    <div class="set-form hidden">
+        <h2>SET</h2>
+        <input id="set-key" type="text" name="key" placeholder="key"><br>
+        <input id="set-value" type="number" name="value" placeholder="value"><br>
+        <button style="margin-top: 20px;" id="set-submit">SEND</button>
+    </div>
+
+
+
+<script>
+$(document).find("button").click(function() {
+    if (this.id === "get"){
+        $(".get-form").toggleClass("hidden")
+        if ($(".set-form").hasClass("hidden")) {
+        }
+        else {
+            $(".set-form").toggleClass("hidden")
+        }
+    }
+    else if (this.id === "set"){
+        $(".set-form").toggleClass("hidden")
+        if ($(".get-form").hasClass("hidden")) {
+        }
+        else {
+            $(".get-form").toggleClass("hidden")
+        }
+    }
+    else if (this.id === "set-submit"){
+        var xhttp = new XMLHttpRequest();
+        var key = $("#set-key").val();
+        var value = $("#set-value").val();
+        if (key === "" || value === "") {
+            var txt = $("<p></p>").text('[O] ERROR -------- input fields can not be empty');
+            var kids = $(".results").children();
+            if (kids.length < 9) {
+                $(".results").append(txt);
+            }
+            else {
+                kids[1].remove()
+                $(".results").append(txt);
+            }
+        }
+        else {
+            xhttp.open("GET", "http://127.0.0.1:8088/"+key+"/"+value.toString(), true);
+            xhttp.onreadystatechange = function() {
+                if(xhttp.readyState === XMLHttpRequest.DONE && xhttp.status === 200) {
+                    var txt = $("<p></p>").text(this.responseText);
+                    var kids = $(".results").children();
+                    if (kids.length < 9) {
+                        $(".results").append(txt);
+                    }
+                    else {
+                        kids[1].remove()
+                        $(".results").append(txt);
+                    }
+                }
+                else if (xhttp.readyState === XMLHttpRequest.DONE && xhttp.status !== 200) {
+                    var txt = $("<p></p>").text('[o] ERROR --------- server not responding');
+                    var kids = $(".results").children();
+                    if (kids.length < 9) {
+                        $(".results").append(txt);
+                    }
+                    else {
+                        kids[1].remove()
+                        $(".results").append(txt);
+                    }
+                }
+            };
+            xhttp.send();
+        }
+        $("#set-key").val("");
+        $("#set-value").val("");
+    }
+    else if (this.id === "get-submit"){
+        var xhttp = new XMLHttpRequest();
+        var key = $("#get-key").val();
+        if (key === "") {
+            var txt = $("<p></p>").text('[O] ERROR -------- input field can not be empty');
+            var kids = $(".results").children();
+            if (kids.length < 9) {
+                $(".results").append(txt);
+            }
+            else {
+                kids[1].remove()
+                $(".results").append(txt);
+            }
+        }
+        else {
+            xhttp.open("GET", "http://127.0.0.1:8088/"+key, true);
+            xhttp.onreadystatechange = function() {
+                if(xhttp.readyState === XMLHttpRequest.DONE && xhttp.status === 200) {
+                    var txt = $("<p></p>").text(this.responseText);
+                    var kids = $(".results").children();
+                    if (kids.length < 9) {
+                        $(".results").append(txt);
+                    }
+                    else {
+                        kids[1].remove();
+                        $(".results").append(txt);
+                    }
+                }
+                else if (xhttp.readyState === XMLHttpRequest.DONE && xhttp.status !== 200) {
+                    var txt = $("<p></p>").text('[o] ERROR --------- server not responding');
+                    $(".results").append(txt);
+                }
+            };
+            var txt2 = $("<p></p>").text('[.] SENT REQUEST -------- Key: '+key);
+            var kids2 = $(".results").children();
+            if (kids2.length < 9) {
+                $(".results").append(txt2);
+            }
+            else {
+                kids2[1].remove();
+                $(".results").append(txt2);
+            }
+            xhttp.send();
+        }
+        $("#get-key").val("");
+    }
+});
+</script>
+</body>
+</html>
