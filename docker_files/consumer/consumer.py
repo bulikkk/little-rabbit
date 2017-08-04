@@ -15,11 +15,10 @@ def database(key):
     cur.execute("""SELECT v FROM data WHERE k='{}';""".format(key))
     res = cur.fetchone()
     if res:
-        response = {'k': key, 'v': res}
+        response = {'k': key, 'v': res[0]}
     else:
         response = {'k': key, 'v': 'No such key'}
     cur.close()
-    con.commit()
     con.close()
     return response
 
@@ -28,12 +27,10 @@ async def on_request(channel, body, envelope, properties):
     data = json.loads(body.decode("utf-8"))
 
     print(" [.] GETTING value for key: {}".format(data['k']))
-    r = database(data['k'])
-
-    await channel.queue_declare(queue_name=proper)
+    response = database(data['k'])
 
     await channel.basic_publish(
-        payload=json.dumps(r),
+        payload=json.dumps(response),
         exchange_name='',
         routing_key=properties.reply_to,
         properties={
@@ -44,8 +41,7 @@ async def on_request(channel, body, envelope, properties):
     await channel.basic_client_ack(delivery_tag=envelope.delivery_tag)
 
 
-@asyncio.coroutine
-def callback(channel, body, envelope, properties):
+async def callback(channel, body, envelope, properties):
 
     data = json.loads(body.decode("utf-8"))
     if data['action'] == 'set':
@@ -69,17 +65,16 @@ def callback(channel, body, envelope, properties):
 
 
 async def main():
-
     transport, protocol = await aioamqp.connect(host='172.17.0.2', port=5672)
     channel = await protocol.channel()
 
     await channel.queue_declare(queue_name='send')
-    await channel.queue_declare(queue_name='rpc')
+    await channel.queue_declare(queue_name='rpc_queue')
 
     await channel.basic_qos(prefetch_count=1, prefetch_size=0, connection_global=False)
 
     await channel.basic_consume(callback, queue_name='send', no_ack=True)
-    await channel.basic_consume(on_request, queue_name='rpc')
+    await channel.basic_consume(on_request, queue_name='rpc_queue')
     print("======== Running ========\n(Press CTRL+C to quit)")
 
 
@@ -106,5 +101,4 @@ except:
 event_loop = asyncio.get_event_loop()
 event_loop.run_until_complete(main())
 event_loop.run_forever()
-
 
