@@ -1,0 +1,6 @@
+asyncio
+aiohttp
+aiohttp_cors
+aioamqp
+uuid
+RabbitMQ

@@ -1,0 +1,4 @@
+asyncio
+aioamqp
+psycopg2
+RabbitMQ
